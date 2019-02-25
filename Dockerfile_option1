@@ -1,0 +1,50 @@
+
+######################################################################################
+# This dockerfile will describe how to deploy the Single Sign On (SSO) for Integral. #
+# The default integral SSO involves both OpenLDAP and CAS.                           #
+######################################################################################
+
+FROM centos:latest
+######################################################################################
+#Add User Group and Accounts.
+######################################################################################
+USER root 
+RUN mkdir -p /u01/app
+RUN groupadd integral
+RUN cd /u01/app/ && mkdir integral
+RUN chgrp -R integral /u01/app/integral/
+RUN chmod -R 2775 /u01/app/integral/
+RUN useradd -b /u01/app/integral/ -g integral Vishal-test-user
+RUN mkdir –p /u01/app/integral/cas
+RUN cd  /u01/app/integral/ && mkdir life/
+RUN cd  /u01/app/integral/ && mkdir  polisy/
+RUN cd /u01/app/integral/ && mkdir group/  	
+RUN cd /u01/app/integral/ && mkdir hub/
+RUN cd /u01/app/integral/ && mkdir ipos/
+######################################################################################
+# ADD USER #
+######################################################################################
+RUN useradd -b /u01/app/integral/cas/ -g integral cas
+RUN useradd -b /u01/app/integral/life/ -g integral life
+RUN useradd -b /u01/app/integral/polisy/ -g integral polisy
+RUN useradd -b /u01/app/integral/group/ -g integral group
+RUN useradd -b /u01/app/integral/hub/ -g integral hub
+RUN useradd -b /u01/app/integral/ipos/ -g integral ipos
+######################################################################################
+RUN yum update -y 
+RUN yum install -y wget
+RUN wget http://download-ib01.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm
+RUN rpm -Uvh epel-release*rpm
+RUN yum install gcc-c++-x86_64-linux-gnu -y 
+RUN yum install cyrus-sasl-devel -y
+RUN yum install cyrus-sasl -y
+RUN wget http://download.oracle.com/berkeley-db/db-6.1.19.tar.gz
+RUN wget http://www.openssl.org/source/openssl-1.0.1h.tar.gz
+RUN yum install openldap-servers.x86_64 -y
+EXPOSE 389
+COPY slapd.conf /etc/openldap/
+RUN yum install which lsof openldap-clients -y 
+RUN /usr/sbin/slapd
+RUN /usr/sbin/slapd 
+COPY integral.ldif  /etc/openldap/data/
+
